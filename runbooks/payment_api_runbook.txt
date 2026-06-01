@@ -1,0 +1,36 @@
+# Payment API Runbook
+
+## Symptoms
+- High latency on /payment/submit
+- HTTP 500 errors
+- DB connection timeout
+- CPU or memory increase
+- Checkout/payment failures
+
+## Possible Root Causes
+1. Database connection pool saturation
+2. Database node health issue
+3. Slow DB query or lock contention
+4. Recent deployment regression
+5. Downstream payment gateway slowness
+6. Kubernetes pod CPU/memory saturation
+
+## Checks
+1. Check recent deployment/change request.
+2. Check CloudWatch latency and CPU metrics.
+3. Check Splunk/CloudWatch Logs for DB timeout and HTTP 500.
+4. Review Dynatrace traces for downstream DB latency.
+5. Check database connection pool usage.
+6. Check pod restart count and resource limits.
+
+## Remediation
+- Increase DB connection pool if approved.
+- Restart affected pod only if safe.
+- Roll back if issue started after deployment.
+- Scale pods if CPU/memory saturation is seen.
+- Notify database/platform team if DB node issue is confirmed.
+
+## ServiceNow Template
+Short Description: Payment API high latency and HTTP 500 errors.
+
+Description: Payment API is experiencing elevated latency and errors. Logs indicate DB connection timeout. Initial RCA suggests database connection pool saturation or downstream DB latency.
