@@ -18,6 +18,65 @@ Run this check first:
 python src/aws_preflight.py
 ```
 
+## Console IAM Permissions
+
+Do not create the Knowledge Base while signed in as the AWS root user. Sign in as
+an IAM user or IAM Identity Center role.
+
+For this learning POC, the fastest setup is to attach these AWS managed policies
+to the IAM identity that will create the Knowledge Base in the console:
+
+```text
+AmazonBedrockFullAccess
+AmazonS3FullAccess
+IAMFullAccess
+AWSLambda_ReadOnlyAccess
+AmazonOpenSearchServiceFullAccess
+```
+
+The Bedrock console may call Lambda APIs while loading console options. If you
+see `lambda:ListFunctions` access denied, add `AWSLambda_ReadOnlyAccess`.
+
+If Bedrock creates an Amazon OpenSearch Serverless vector store for the
+Knowledge Base, the console identity also needs OpenSearch Serverless `aoss`
+permissions. If `AmazonOpenSearchServerlessFullAccess` is available in IAM,
+attach it. If it is not available, add this inline policy to the IAM user or
+role:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "OpenSearchServerlessForBedrockKnowledgeBase",
+      "Effect": "Allow",
+      "Action": [
+        "aoss:*"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CreateOpenSearchServerlessServiceLinkedRole",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateServiceLinkedRole"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+This resolves errors like:
+
+```text
+AccessDeniedException: not authorized to perform: aoss:CreateSecurityPolicy
+```
+
+For production, replace the broad managed policies and `aoss:*` statement with
+least-privilege policies scoped to the specific bucket, Knowledge Base, service
+role, and OpenSearch Serverless collection.
+
 ## Console Steps
 
 1. Open Amazon Bedrock console.
